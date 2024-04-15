@@ -58,14 +58,14 @@ async function extractVisibleHtmlTree(page: Page) {
     const isVisible = (el: Element) => {
       const rect = el.getBoundingClientRect();
       const style = window.getComputedStyle(el);
-      const partiallyVisible = (rect.top < window.innerHeight && rect.bottom > 0) && (rect.left < window.innerWidth && rect.right > 0);
+      const partiallyVisible = (rect.top < window.innerHeight && rect.bottom >= 0) && (rect.left < window.innerWidth && rect.right >= -window.innerWidth);
       const hasDimensions = rect.width > 0 || rect.height > 0;
       const displayVisible = style.display !== 'none';
       const visibilityVisible = style.visibility === 'visible';
-    
+        
       const visible = displayVisible && visibilityVisible && hasDimensions && partiallyVisible;
       if (!visible) {
-        console.log(`Element hidden: ${el.tagName}, Display: ${style.display}, Visibility: ${style.visibility}, Rect: ${JSON.stringify(rect)}`);
+        console.log(`Element hidden: ${el.tagName}, Display: ${style.display}, Visibility: ${style.visibility}, Rect: ${JSON.stringify(rect)}, Window Height: ${window.innerHeight}, Window Width: ${window.innerWidth}`);
       }
       return visible;
     }
@@ -80,7 +80,7 @@ async function extractVisibleHtmlTree(page: Page) {
         if (!node.textContent?.trim()) {
           return parent
         }
-        console.log("pushing text content", node.textContent.trim())
+        // console.log("pushing text content", node.textContent.trim())
         parent.children.push({
           textContent: node.textContent.trim(),
           children: [],
@@ -97,7 +97,7 @@ async function extractVisibleHtmlTree(page: Page) {
       }
 
       if (node.childNodes.length > 1) {
-        console.log("processing", node.className, "with more than one child element")
+        // console.log("processing", node.className, "with more than one child element")
         const child: CleanElementStandin = {
           tagName: node.tagName,
           role: node.getAttribute('role'),
@@ -130,11 +130,11 @@ async function extractVisibleHtmlTree(page: Page) {
       }
 
       if (node.childNodes.length === 0) {
-        console.log(node.className, "no children, ignoring")
+        // console.log(node.className, "no children, ignoring")
         return parent
       }
 
-      console.log(node.className, "has one child element, removing it from the tree, but will walk down.")
+      // console.log(node.className, "has one child element, removing it from the tree, but will walk down.")
 
       return walkDom(node.children[0], parent);
     }
@@ -149,6 +149,8 @@ export class WebLoader {
   waitFor?: string;
   url: string;
 
+  private page?: Page
+
   constructor({
     waitFor,
     browser,
@@ -162,6 +164,7 @@ export class WebLoader {
   async visit() {
     const browser = this.browser;
     const page = await browser.newPage();
+    this.page = page
     try {
       // don't use a headless user agent since many sites will block that.
       await page.setUserAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36")
@@ -183,19 +186,40 @@ export class WebLoader {
       if (!body) {
         throw new Error("No body element found");
       }
-      const visible = await extractVisibleHtmlTree(page);
-
-      // console.log("visible: ", visible);
-      const screenshotPath = 'images/screenshot.png';
-      await page.screenshot({ path: screenshotPath });
-      console.log(`Screenshot saved to ${screenshotPath}`);
-      return visible
     } catch (err) {
       console.error("error visiting: ", this.url, err);
+      page.close()
       throw err
-    } finally {
-      await page.close();
     }
+  }
+
+  async captureVisibleHtmlTree(): Promise<CleanElementStandin> {
+    return extractVisibleHtmlTree(this.mustPage());
+  }
+
+  close() {
+    if (this.page) {
+      this.page.close();
+      this.page = undefined;
+    }
+  }
+
+  async screenshot(path: string) {
+    await this.mustPage().screenshot({ path: path });
+    console.log(`Screenshot saved to ${path}`);
+  }
+
+  async pageDown() {
+    this.mustPage().evaluate(() => {
+      window.scrollBy(0, Math.floor(window.innerHeight * 0.85));
+    })
+  }
+
+  private mustPage() {
+    if (!this.page) {
+      throw new Error("No page loaded");
+    }
+    return this.page;
   }
 
 }

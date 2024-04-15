@@ -1,4 +1,4 @@
-import { describe, it, beforeAll } from 'bun:test'
+import { describe, it, beforeAll, afterAll } from 'bun:test'
 import { WebLoader, createBrowser, htmlFromCleanElement } from '../src/browser.js'
 import { Browser } from 'puppeteer'
 import { htmlToMarkdown } from '../src/turndown.js'
@@ -10,12 +10,28 @@ describe('browser', () => {
     browser = await createBrowser()
   })
 
+  afterAll(async () => {
+    await browser.close()
+  })
+
   it('should run in browser', async () => {
     const loader = new WebLoader({ url: "https://en.wikipedia.org/wiki/Puthandu", browser })
 
-    const resp = await loader.visit()
+    try {
+      await loader.visit()
 
-    console.log(htmlToMarkdown(htmlFromCleanElement(resp)))
+      await loader.screenshot("images/first.png")
+
+      console.log(htmlToMarkdown(htmlFromCleanElement(await loader.captureVisibleHtmlTree())))
+      console.log(" PAGE DOWN --------------")
+      await loader.pageDown()
+      await loader.screenshot("images/second.png")
+
+      console.log(htmlToMarkdown(htmlFromCleanElement(await loader.captureVisibleHtmlTree())))
+    } finally {
+      loader.close()
+    }
+
   }, {
     timeout: 30_000
   })
