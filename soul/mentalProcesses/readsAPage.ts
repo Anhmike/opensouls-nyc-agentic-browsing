@@ -1,5 +1,5 @@
 
-import { MentalProcess, indentNicely, useActions, usePerceptions, useProcessManager, useProcessMemory, useSoulMemory } from "@opensouls/engine";
+import { MentalProcess, indentNicely, useActions, usePerceptions, useProcessManager, useSoulMemory } from "@opensouls/engine";
 import externalDialog from "../cognitiveSteps/externalDialog.js";
 import { robotEyes } from "../cognitiveFunctions/robotEyes.js";
 import instruction from "../cognitiveSteps/instruction.js";
@@ -10,8 +10,6 @@ export enum BrowserResponses {
   scrolledDown = "scrolledDown",
   scrolledUp = "scrolledUp",
 }
-
-const browserResponses: string[] = Object.values(BrowserResponses);
 
 const readsAPage: MentalProcess = async ({ workingMemory }) => {
   const { speak, dispatch, log } = useActions()
@@ -40,17 +38,6 @@ const readsAPage: MentalProcess = async ({ workingMemory }) => {
     return withDialog
   }
 
-  // if (!browserResponses.includes(invokingPerception?.action || "")) {
-  //   const [withDialog, stream] = await externalDialog(
-  //     workingMemory,
-  //     "Let the user know you're busy, and you'll be with them in a sec.",
-  //     { stream: true, model: "quality" }
-  //   );
-
-  //   speak(stream);
-  //   return withDialog
-  // }
-
   if (!invokingPerception) {
     throw new Error("no invoking perception")
   }
@@ -59,7 +46,6 @@ const readsAPage: MentalProcess = async ({ workingMemory }) => {
     lastImage.current = invokingPerception._metadata!.screenshot as string // base64 encoded image as data url
     lastContent.current = invokingPerception._metadata!.content as string
   }
-
 
   if (needsSkim.current) {
     const answer = await robotEyes({
@@ -97,11 +83,7 @@ const readsAPage: MentalProcess = async ({ workingMemory }) => {
     needsSkim.current = false
   }
 
-
-
   const afterToolChoice = await toolChooser(workingMemory)
-
-  // TODO: tool choice!
 
   const [withExclamation, stream] = await externalDialog(
     afterToolChoice,
