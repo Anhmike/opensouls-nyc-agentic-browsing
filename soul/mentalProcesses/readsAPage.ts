@@ -21,6 +21,8 @@ const readsAPage: MentalProcess = async ({ workingMemory }) => {
   const lastImage = useSoulMemory("lastImage", "")
   const lastContent = useSoulMemory("lastContent", "")
 
+  const needsSkim = useSoulMemory("needsSkim", true)
+
   if (invocationCount === 0) {
     console.log("dispatching visit", siteToVisit.current)
     dispatch({
@@ -38,16 +40,16 @@ const readsAPage: MentalProcess = async ({ workingMemory }) => {
     return withDialog
   }
 
-  if (!browserResponses.includes(invokingPerception?.action || "")) {
-    const [withDialog, stream] = await externalDialog(
-      workingMemory,
-      "Let the user know you're busy, and you'll be with them in a sec.",
-      { stream: true, model: "quality" }
-    );
+  // if (!browserResponses.includes(invokingPerception?.action || "")) {
+  //   const [withDialog, stream] = await externalDialog(
+  //     workingMemory,
+  //     "Let the user know you're busy, and you'll be with them in a sec.",
+  //     { stream: true, model: "quality" }
+  //   );
 
-    speak(stream);
-    return withDialog
-  }
+  //   speak(stream);
+  //   return withDialog
+  // }
 
   if (!invokingPerception) {
     throw new Error("no invoking perception")
@@ -58,38 +60,47 @@ const readsAPage: MentalProcess = async ({ workingMemory }) => {
   lastImage.current = invokingPerception._metadata!.screenshot as string // base64 encoded image as data url
   lastContent.current = invokingPerception._metadata!.content as string
 
-  const answer = await robotEyes({
-    query: indentNicely`
-      Please answer the following: 
-      * What are the first things someone who loves learning would notice about the site?
-      * What colors are used on the site?
-      * Is there anything interesting about the layout or design?
-      * Does the site appear professional?
-    `,
-    image: lastImage.current
-  })
+  if (needsSkim.current) {
+    const answer = await robotEyes({
+      query: indentNicely`
+        Please answer the following: 
+        * What are the first things someone who loves learning would notice about the site?
+        * What colors are used on the site?
+        * Is there anything interesting about the layout or design?
+        * Does the site appear professional?
+      `,
+      image: lastImage.current
+    })
+  
+    log("robotEyes", answer)
+  
+    const [withSkim, skimmed] = await instruction(
+      workingMemory,
+      indentNicely`
+        ${workingMemory.soulName} has the following text from a web page in front of them:
+        ## Robot Eyes Report
+        ${answer}
+  
+        ## Visible Website Text
+        ${lastContent.current}
+  
+        Please respond with the very first things ${workingMemory.soulName} would notice from skimming the text.
+        Respond with only 1 or 2 sentences. Use the format "${workingMemory.soulName} skimmed: '...'"
+      `,
+    )
 
-  log("robotEyes", answer)
+    log("skimmed", skimmed)
 
-  const [withSkim, skimmed] = await instruction(
-    workingMemory,
-    indentNicely`
-      ${workingMemory.soulName} has the following text from a web page in front of them:
-      ## Robot Eyes Report
-      ${answer}
+    workingMemory = withSkim
 
-      ## Visible Website Text
-      ${lastContent.current}
+    needsSkim.current = false
+  }
 
-      Please respond with the very first things ${workingMemory.soulName} would notice from skimming the text.
-      Respond with only 1 or 2 sentences. Use the format "${workingMemory.soulName} skimmed: '...'"
-    `,
-  )
 
-  const afterToolChoice = await toolChooser(withSkim)
+
+  const afterToolChoice = await toolChooser(workingMemory)
 
   // TODO: tool choice!
-  log("skimmed", skimmed)
 
   const [withExclamation, stream] = await externalDialog(
     afterToolChoice,

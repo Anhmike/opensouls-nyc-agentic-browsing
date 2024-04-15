@@ -16,7 +16,7 @@ export enum ToolPossibilities {
 export const toolChooser = async (workingMemory: WorkingMemory): Promise<WorkingMemory> => {
   const { log, dispatch } = useActions()
   const lastContent = useSoulMemory("lastContent", "")
-
+  const needsSkim = useSoulMemory("needsSkim", true)
 
   const [withToolChoice, toolChoice] = await decision(
     workingMemory,
@@ -26,7 +26,7 @@ export const toolChooser = async (workingMemory: WorkingMemory): Promise<Working
         They are now deciding what to do next. They have access to the following tools:
         * ${ToolPossibilities.scrollDown} - scrolls down the browser one window height. Keep in mind, there might be some text overlap with what they are currently reading.
         * ${ToolPossibilities.scrollUp} - scrolls up the browser one window height.
-        * ${ToolPossibilities.queryRobotEyes} - ask Robot Eyes to analyze the page again, ${workingMemory.soulName} can ask specific questions about the page.
+        * ${ToolPossibilities.queryRobotEyes} - ask Robot Eyes to look at the page again. These are the same eyes that ${workingMemory.soulName} used to visually look at the page initially. They can answer questions about layout, color, etc.
         * ${ToolPossibilities.readSectionText} - read this section of the page carefully (get the full HTML). It will only change if ${workingMemory.soulName} scrolls down or up.
         * ${ToolPossibilities.saySomething} - pause reading the page for a sec, and say something to the interlocutor.
         
@@ -46,6 +46,7 @@ export const toolChooser = async (workingMemory: WorkingMemory): Promise<Working
         content: ""
       })
       log("scroll down")
+      needsSkim.current = true
       return workingMemory
     case ToolPossibilities.scrollUp:
       dispatch({
@@ -53,6 +54,7 @@ export const toolChooser = async (workingMemory: WorkingMemory): Promise<Working
         content: ""
       })
       log("scroll up")
+      needsSkim.current = true
       return workingMemory
     case ToolPossibilities.queryRobotEyes:
       {
