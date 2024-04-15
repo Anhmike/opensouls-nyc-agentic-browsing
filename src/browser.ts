@@ -3,7 +3,6 @@ import puppeteer, { Browser, ElementHandle, Page, PuppeteerLaunchOptions } from 
 
 export interface WebBrowserArgs {
   browser: Browser;
-  url: string;
   waitFor?: string;
 }
 
@@ -147,24 +146,26 @@ async function extractVisibleHtmlTree(page: Page) {
 export class WebLoader {
   browser: Browser;
   waitFor?: string;
-  url: string;
+  url?: string;
 
   private page?: Page
 
   constructor({
     waitFor,
     browser,
-    url,
   }: WebBrowserArgs) {
     this.browser = browser;
     this.waitFor = waitFor;
-    this.url = url;
   }
 
-  async visit() {
+  async visit(url: string) {
     const browser = this.browser;
-    const page = await browser.newPage();
-    this.page = page
+    if (!this.page) {
+      this.page = await browser.newPage();
+    }
+    const page = this.page
+    this.url = url
+
     try {
       // don't use a headless user agent since many sites will block that.
       await page.setUserAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36")
@@ -193,8 +194,8 @@ export class WebLoader {
     }
   }
 
-  async captureVisibleHtmlTree(): Promise<CleanElementStandin> {
-    return extractVisibleHtmlTree(this.mustPage());
+  async captureVisibleHtmlTree(): Promise<string> {
+    return htmlFromCleanElement(await extractVisibleHtmlTree(this.mustPage()))
   }
 
   close() {
@@ -204,14 +205,21 @@ export class WebLoader {
     }
   }
 
-  async screenshot(path: string) {
-    await this.mustPage().screenshot({ path: path });
+  async screenshot(path?: string) {
+    const resp = await this.mustPage().screenshot({ path: path, encoding: path ? 'binary' : 'base64'});
     console.log(`Screenshot saved to ${path}`);
+    return resp
   }
 
   async pageDown() {
     this.mustPage().evaluate(() => {
-      window.scrollBy(0, Math.floor(window.innerHeight * 0.85));
+      window.scrollBy(0, Math.floor(window.innerHeight * 0.90));
+    })
+  }
+
+  async pageUp() {
+    this.mustPage().evaluate(() => {
+      window.scrollBy(0, -1 * window.innerHeight);
     })
   }
 
