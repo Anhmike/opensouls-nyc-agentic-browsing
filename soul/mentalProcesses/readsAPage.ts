@@ -65,7 +65,13 @@ const readsAPage: MentalProcess = async ({ workingMemory }) => {
   lastContent.current = invokingPerception._metadata!.content as string
 
   const answer = await robotEyes({
-    query: "Given someone who loves learning, what are the first few things they'd notice about this webpage",
+    query: indentNicely`
+      Please answer the following: 
+      * What are the first things someone who loves learning would notice about the site?
+      * What colors are used on the site?
+      * Is there anything interesting about the layout or design?
+      * Does the site appear professional?
+    `,
     image: lastImage.current
   })
 
