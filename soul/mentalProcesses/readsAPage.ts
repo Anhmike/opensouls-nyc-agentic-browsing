@@ -3,6 +3,7 @@ import { MentalProcess, indentNicely, useActions, usePerceptions, useProcessMana
 import externalDialog from "../cognitiveSteps/externalDialog.js";
 import { robotEyes } from "../cognitiveFunctions/robotEyes.js";
 import instruction from "../cognitiveSteps/instruction.js";
+import { toolChooser } from "../cognitiveFunctions/toolChooser.js";
 
 export enum BrowserResponses {
   visited = "visited",
@@ -12,20 +13,13 @@ export enum BrowserResponses {
 
 const browserResponses: string[] = Object.values(BrowserResponses);
 
-export enum ToolPossibilities {
-  visit = "visit",
-  scrollDown = "scrollDown",
-  scrollUp = "scrollUp",
-  queryRobotEyes = "robotEyes",
-}
-
 const readsAPage: MentalProcess = async ({ workingMemory }) => {
   const { speak, dispatch, log } = useActions()
   const { invocationCount } = useProcessManager()
   const { invokingPerception } = usePerceptions()
   const siteToVisit = useSoulMemory("siteToVisit", "")
-  const lastImage = useProcessMemory("")
-  const lastContent = useProcessMemory("")
+  const lastImage = useSoulMemory("lastImage", "")
+  const lastContent = useSoulMemory("lastContent", "")
 
   if (invocationCount === 0) {
     console.log("dispatching visit", siteToVisit.current)
@@ -88,16 +82,23 @@ const readsAPage: MentalProcess = async ({ workingMemory }) => {
       ${lastContent.current}
 
       Please respond with the very first things ${workingMemory.soulName} would notice from skimming the text.
-      Respond with only 1 or 2 sentences.
+      Respond with only 1 or 2 sentences. Use the format "${workingMemory.soulName} skimmed: '...'"
     `,
   )
+
+  const afterToolChoice = await toolChooser(withSkim)
 
   // TODO: tool choice!
   log("skimmed", skimmed)
 
+  const [withExclamation, stream] = await externalDialog(
+    afterToolChoice,
+    `Exclaim something interesting about the page that ${workingMemory.soulName} finds super interesting.`,
+    { stream: true, model: "gpt-4-turbo" }
+  )
+  speak(stream)
 
-
-  return withSkim
+  return withExclamation
 }
 
 export default readsAPage
