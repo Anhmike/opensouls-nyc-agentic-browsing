@@ -1,6 +1,7 @@
 import { describe, it, beforeAll } from 'bun:test'
 import { WebLoader, createBrowser, htmlFromCleanElement } from '../src/browser.js'
 import { Browser } from 'puppeteer'
+import { htmlToMarkdown } from '../src/turndown.js'
 
 describe('browser', () => {
   let browser: Browser
@@ -14,7 +15,7 @@ describe('browser', () => {
 
     const resp = await loader.visit()
 
-    console.log(htmlFromCleanElement(resp))
+    console.log(htmlToMarkdown(htmlFromCleanElement(resp)))
   }, {
     timeout: 30_000
   })

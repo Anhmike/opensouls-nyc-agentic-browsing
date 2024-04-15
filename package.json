@@ -12,9 +12,10 @@
   "author": "",
   "license": "UNLICENSED",
   "devDependencies": {
-    "typescript": "^5.3.3",
     "@types/bun": "^1.0.12",
-    "@types/puppeteer": "^7.0.4"
+    "@types/puppeteer": "^7.0.4",
+    "@types/turndown": "^5.0.4",
+    "typescript": "^5.3.3"
   },
   "dependencies": {
     "@opensouls/engine": ">=0.1.15",

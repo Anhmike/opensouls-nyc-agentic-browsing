@@ -50,17 +50,22 @@ async function extractVisibleHtmlTree(page: Page) {
       throw new Error("No body element found");
     }
 
-
     const currentNode: CleanElementStandin = {
       tagName: body.tagName,
       children: [],
     }
 
     const isVisible = (el: Element) => {
+      const rect = el.getBoundingClientRect();
       const style = window.getComputedStyle(el);
-      const visible = style.display !== 'none' && style.visibility === 'visible' && el.offsetWidth > 0 && el.offsetHeight > 0;
+      const partiallyVisible = (rect.top < window.innerHeight && rect.bottom > 0) && (rect.left < window.innerWidth && rect.right > 0);
+      const hasDimensions = rect.width > 0 || rect.height > 0;
+      const displayVisible = style.display !== 'none';
+      const visibilityVisible = style.visibility === 'visible';
+    
+      const visible = displayVisible && visibilityVisible && hasDimensions && partiallyVisible;
       if (!visible) {
-        console.log(`Element hidden: ${el.tagName}, Display: ${style.display}, Visibility: ${style.visibility}, Width: ${el.offsetWidth}, Height: ${el.offsetHeight}`);
+        console.log(`Element hidden: ${el.tagName}, Display: ${style.display}, Visibility: ${style.visibility}, Rect: ${JSON.stringify(rect)}`);
       }
       return visible;
     }
