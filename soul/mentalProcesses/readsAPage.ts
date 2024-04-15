@@ -55,10 +55,11 @@ const readsAPage: MentalProcess = async ({ workingMemory }) => {
     throw new Error("no invoking perception")
   }
 
-  // these will all have a screenshot
+  if (invokingPerception._metadata?.screenshot) {
+    lastImage.current = invokingPerception._metadata!.screenshot as string // base64 encoded image as data url
+    lastContent.current = invokingPerception._metadata!.content as string
+  }
 
-  lastImage.current = invokingPerception._metadata!.screenshot as string // base64 encoded image as data url
-  lastContent.current = invokingPerception._metadata!.content as string
 
   if (needsSkim.current) {
     const answer = await robotEyes({
