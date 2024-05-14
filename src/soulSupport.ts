@@ -10,7 +10,7 @@ export class SoulBrowser {
     this.soul = new Soul({
       organization: "tobowers",
       blueprint: "readerman",
-      soulId: "browser2",
+      soulId: "browser3",
       local: true,
       debug: true,
       token: process.env.SOUL_ENGINE_TOKEN,
