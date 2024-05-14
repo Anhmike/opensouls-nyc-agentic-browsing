@@ -1,6 +1,7 @@
-import { WorkingMemory, indentNicely, useActions, useSoulMemory } from "@opensouls/engine";
+import { WorkingMemory, indentNicely, useActions, useSoulMemory, useTool } from "@opensouls/engine";
 import decision from "../cognitiveSteps/decision.js";
 import { queryRobotEyes } from "./queryRobotEyes.js";
+import { skimContent } from "./skimmer.js";
 
 export enum ToolPossibilities {
   // visit = "visit",
@@ -14,9 +15,11 @@ export enum ToolPossibilities {
 
 
 export const toolChooser = async (workingMemory: WorkingMemory): Promise<WorkingMemory> => {
-  const { log, dispatch } = useActions()
+  const { log } = useActions()
   const lastContent = useSoulMemory("lastContent", "")
-  const needsSkim = useSoulMemory("needsSkim", true)
+
+  const scrollDown = useTool<void, { screenshot: string, markdown: string }>("scrollDown")
+  const scrollUp = useTool<void, { screenshot: string, markdown: string }>("scrollUp")
 
   const [withToolChoice, toolChoice] = await decision(
     workingMemory,
@@ -41,21 +44,35 @@ export const toolChooser = async (workingMemory: WorkingMemory): Promise<Working
 
   switch (toolChoice) {
     case ToolPossibilities.scrollDown:
-      dispatch({
-        action: "scrollDown",
-        content: ""
-      })
-      log("scroll down")
-      needsSkim.current = true
-      return workingMemory
+      {
+        log("scroll down")
+        const { markdown, screenshot } = await scrollDown()
+        lastContent.current = markdown
+
+        const withSkim = await skimContent(
+          workingMemory.withMonologue(indentNicely`
+          ${workingMemory.soulName} scrolls down.
+        `),
+          markdown,
+          screenshot,
+        )
+        return toolChooser(withSkim)
+      }
     case ToolPossibilities.scrollUp:
-      dispatch({
-        action: "scrollUp",
-        content: ""
-      })
-      log("scroll up")
-      needsSkim.current = true
-      return workingMemory
+      {
+        log("scroll up")
+        const { markdown, screenshot } = await scrollUp()
+        lastContent.current = markdown
+
+        const withSkim = await skimContent(
+          workingMemory.withMonologue(indentNicely`
+          ${workingMemory.soulName} scrolls up.
+        `),
+          markdown,
+          screenshot,
+        )
+        return toolChooser(withSkim)
+      }
     case ToolPossibilities.queryRobotEyes:
       {
         log("querying robot eyes")

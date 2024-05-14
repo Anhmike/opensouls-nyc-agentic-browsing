@@ -18,9 +18,10 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@opensouls/engine": ">=0.1.20",
+    "@opensouls/engine": "link:@opensouls/engine",
+    "@opensouls/soul": "link:@opensouls/soul",
     "dotenv": "^16.4.5",
-    "puppeteer": "^22.6.4",
+    "puppeteer": "^22.8.1",
     "turndown": "^7.1.3"
   }
 }

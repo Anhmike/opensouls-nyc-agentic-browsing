@@ -1,9 +1,9 @@
 
-import { MentalProcess, indentNicely, useActions, usePerceptions, useProcessManager, useSoulMemory } from "@opensouls/engine";
+import { MentalProcess, useActions, useProcessManager, useSoulMemory, useTool } from "@opensouls/engine";
 import externalDialog from "../cognitiveSteps/externalDialog.js";
-import { robotEyes } from "../cognitiveFunctions/robotEyes.js";
-import instruction from "../cognitiveSteps/instruction.js";
 import { toolChooser } from "../cognitiveFunctions/toolChooser.js";
+import { BIG_MODEL } from "../lib/models.js";
+import { skimContent } from "../cognitiveFunctions/skimmer.js";
 
 export enum BrowserResponses {
   visited = "visited",
@@ -12,75 +12,33 @@ export enum BrowserResponses {
 }
 
 const readsAPage: MentalProcess = async ({ workingMemory }) => {
-  const { speak, dispatch, log } = useActions()
+  const { speak, log } = useActions()
   const { invocationCount } = useProcessManager()
-  const { invokingPerception } = usePerceptions()
   const siteToVisit = useSoulMemory("siteToVisit", "")
-  const lastImage = useSoulMemory("lastImage", "")
   const lastContent = useSoulMemory("lastContent", "")
-
-  const needsSkim = useSoulMemory("needsSkim", true)
+  const visit = useTool<{ url: string }, { screenshot: string, markdown: string}>("visit")
 
   if (invocationCount === 0) {
-    console.log("dispatching visit", siteToVisit.current)
-    dispatch({
-      action: "visit",
-      content: siteToVisit.current,
-    })
-    const [withDialog, stream] = await externalDialog(
+    log("dispatching visit", siteToVisit.current)
+    const [, stream] = await externalDialog(
       workingMemory,
       "Let the user know readerman is about to read the page.",
-      { stream: true, model: "quality" }
+      { stream: true, model: BIG_MODEL }
     );
-
     speak(stream);
 
-    return withDialog
-  }
+    log("dispatching visit", siteToVisit.current)
+    const initialPage = await visit({ url: siteToVisit.current })
 
-  if (!invokingPerception) {
-    throw new Error("no invoking perception")
-  }
+    log("after visit", siteToVisit.current)
 
-  if (invokingPerception._metadata?.screenshot) {
-    lastImage.current = invokingPerception._metadata!.screenshot as string // base64 encoded image as data url
-    lastContent.current = invokingPerception._metadata!.content as string
-  }
+    lastContent.current = initialPage.markdown
 
-  if (needsSkim.current) {
-    const answer = await robotEyes({
-      query: indentNicely`
-        Please answer the following: 
-        * What are the first things someone who loves learning would notice about the site?
-        * What colors are used on the site?
-        * Is there anything interesting about the layout or design?
-        * Does the site appear professional?
-      `,
-      image: lastImage.current
-    })
-  
-    log("robotEyes", answer)
-  
-    const [withSkim, skimmed] = await instruction(
-      workingMemory,
-      indentNicely`
-        ${workingMemory.soulName} has the following text from a web page in front of them:
-        ## Robot Eyes Report
-        ${answer}
-  
-        ## Visible Website Text
-        ${lastContent.current}
-  
-        Please respond with the very first things ${workingMemory.soulName} would notice from skimming the text.
-        Respond with only 1 or 2 sentences. Use the format "${workingMemory.soulName} skimmed: '...'"
-      `,
-    )
-
-    log("skimmed", skimmed)
+    log("skimming the content")
+    
+    const withSkim = await skimContent(workingMemory, initialPage.markdown, initialPage.screenshot)
 
     workingMemory = withSkim
-
-    needsSkim.current = false
   }
 
   const afterToolChoice = await toolChooser(workingMemory)
@@ -88,7 +46,7 @@ const readsAPage: MentalProcess = async ({ workingMemory }) => {
   const [withExclamation, stream] = await externalDialog(
     afterToolChoice,
     `Exclaim something interesting about the page that ${workingMemory.soulName} finds super interesting.`,
-    { stream: true, model: "gpt-4-turbo" }
+    { stream: true, model: BIG_MODEL }
   )
   speak(stream)
 

@@ -1,4 +1,4 @@
-import { ActionEvent, Soul } from "@opensouls/engine"
+import { Soul } from "@opensouls/soul"
 import { WebLoader, createBrowser } from "./browser.js"
 import { htmlToMarkdown } from "./turndown.js"
 
@@ -15,9 +15,49 @@ export class SoulBrowser {
       debug: true,
       token: process.env.SOUL_ENGINE_TOKEN,
     })
-    this.soul.on("visit", this.onVisit.bind(this))
-    this.soul.on("scrollDown", this.onScrollDown.bind(this))
-    this.soul.on("scrollUp", this.onScrollUp.bind(this))
+
+    this.soul.registerTool("visit", async ({ url }: { url: string}) => {
+      console.log("visiting", url)
+      await this.mustLoader().visit(url)
+      const html = await this.mustLoader().captureVisibleHtmlTree()
+      const markdown = htmlToMarkdown(html)
+
+      const screenshot = await this.mustLoader().screenshot()
+      console.log("returning", markdown.length, screenshot.length)
+      return {
+        markdown,
+        screenshot: `data:image/png;base64,${screenshot}`
+      }
+    })
+
+    this.soul.registerTool("scrollDown", async () => {
+      console.log("scrollDown")
+      await this.mustLoader().pageDown()
+      const html = await this.mustLoader().captureVisibleHtmlTree()
+      const markdown = htmlToMarkdown(html)
+      const screenshot = await this.mustLoader().screenshot()
+      return {
+        markdown,
+        screenshot: `data:image/png;base64,${screenshot}`,
+      }
+    })
+
+    this.soul.registerTool("scrollUp", async () => {
+      console.log("scrollUp")
+
+      await this.mustLoader().pageUp()
+      const html = await this.mustLoader().captureVisibleHtmlTree()
+      const markdown = htmlToMarkdown(html)
+      const screenshot = await this.mustLoader().screenshot()
+      return {
+        markdown,
+        screenshot: `data:image/png;base64,${screenshot}`,
+      }
+    })
+
+    // this.soul.on("visit", this.onVisit.bind(this))
+    // this.soul.on("scrollDown", this.onScrollDown.bind(this))
+    // this.soul.on("scrollUp", this.onScrollUp.bind(this))
   }
 
   async start() {
@@ -30,55 +70,55 @@ export class SoulBrowser {
     this.loader?.close()
   }
 
-  async onVisit(evt: ActionEvent) {
-    console.log("on visit event", await evt.content())
-    await this.mustLoader().visit(await evt.content())
-    const html = await this.mustLoader().captureVisibleHtmlTree()
-    const markdown = htmlToMarkdown(html)
+  // async onVisit(evt: ActionEvent) {
+  //   console.log("on visit event", await evt.content())
+  //   await this.mustLoader().visit(await evt.content())
+  //   const html = await this.mustLoader().captureVisibleHtmlTree()
+  //   const markdown = htmlToMarkdown(html)
 
-    const screenshot = await this.mustLoader().screenshot()
+  //   const screenshot = await this.mustLoader().screenshot()
 
-    this.soul.dispatch({
-      action: "visited",
-      content: `Readerman visited ${this.mustLoader().url}`,
-      _metadata: {
-        content: markdown,
-        screenshot: `data:image/png;base64,${screenshot}`
-      }
-    })
-  }
+  //   this.soul.dispatch({
+  //     action: "visited",
+  //     content: `Readerman visited ${this.mustLoader().url}`,
+  //     _metadata: {
+  //       content: markdown,
+  //       screenshot: `data:image/png;base64,${screenshot}`
+  //     }
+  //   })
+  // }
 
-  async onScrollDown(_evt: ActionEvent) {
-    await this.mustLoader().pageDown()
-    const html = await this.mustLoader().captureVisibleHtmlTree()
-    const markdown = htmlToMarkdown(html)
-    const screenshot = await this.mustLoader().screenshot()
+  // async onScrollDown(_evt: ActionEvent) {
+  //   await this.mustLoader().pageDown()
+  //   const html = await this.mustLoader().captureVisibleHtmlTree()
+  //   const markdown = htmlToMarkdown(html)
+  //   const screenshot = await this.mustLoader().screenshot()
 
-    this.soul.dispatch({
-      action: "scrolledDown",
-      content: `Readerman scrolled down`,
-      _metadata: {
-        screenshot: `data:image/png;base64,${screenshot}`,
-        content: markdown,
-      }
-    })
-  }
+  //   this.soul.dispatch({
+  //     action: "scrolledDown",
+  //     content: `Readerman scrolled down`,
+  //     _metadata: {
+  //       screenshot: `data:image/png;base64,${screenshot}`,
+  //       content: markdown,
+  //     }
+  //   })
+  // }
 
-  async onScrollUp(_evt: ActionEvent) {
-    await this.mustLoader().pageUp()
-    const html = await this.mustLoader().captureVisibleHtmlTree()
-    const markdown = htmlToMarkdown(html)
-    const screenshot = await this.mustLoader().screenshot()
+  // async onScrollUp(_evt: ActionEvent) {
+  //   await this.mustLoader().pageUp()
+  //   const html = await this.mustLoader().captureVisibleHtmlTree()
+  //   const markdown = htmlToMarkdown(html)
+  //   const screenshot = await this.mustLoader().screenshot()
 
-    this.soul.dispatch({
-      action: "scrolledUp",
-      content: `Readerman scrolled up`,
-      _metadata: {
-        screenshot: `data:image/png;base64,${screenshot}`,
-        content: markdown,
-      }
-    })
-  }
+  //   this.soul.dispatch({
+  //     action: "scrolledUp",
+  //     content: `Readerman scrolled up`,
+  //     _metadata: {
+  //       screenshot: `data:image/png;base64,${screenshot}`,
+  //       content: markdown,
+  //     }
+  //   })
+  // }
 
   private mustLoader() {
     if (!this.loader) {

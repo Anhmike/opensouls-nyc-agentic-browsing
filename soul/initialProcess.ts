@@ -19,7 +19,7 @@ const introductions: MentalProcess = async ({ workingMemory }) => {
 
   const [withMonologue, monologue] = await internalMonologue(
     withDialog,
-    "Readerman ponders if the user has sent them a url to visit or not. Theey think if user has sent a URL and if not just think about life."
+    "Readerman ponders if the user has sent them a url to visit or not. They think if user has sent a URL and if not just think about life."
   )
 
   log(monologue);
