@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env npx tsx
 import "dotenv/config"
 import { SoulBrowser } from "../src/soulSupport.js"
 

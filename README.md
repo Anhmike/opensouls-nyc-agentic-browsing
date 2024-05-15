@@ -1,18 +1,16 @@
-The Soul Engine
+Readerman: The Haughty Website Critic
 =================
 
-The **Soul Engine** is a powerful tool for creating, developing, and deploying AI souls. Souls are dynamic, agentic, and stateful entities that are steerable by the developer, enabling the creation of engaging user and player experiences interacting with the souls.
+Readerman is a haughty design critic who will examine a website and then critique it to his high standards.
+Readerman is *also* an example of agentic tool use (in this case a browser) from the Soul Engine and also using a small vision library to support high level reasoning from an AI soul.
 
 # ⚡ QuickStart
 
-This project contains a complete Soul [Blueprint](https://docs.souls.chat). To get started, simply go to the root directory and run
+1. `npm install`
+2. `npx soul-engine login` Login/Signup for the soul engine! 
+3. `npm run setup` setup your .env file 
+4. `npm start` run the soul's browser and launch debug chat in yours
 
-```bash
-npx soul-engine dev
-```
-
-which will connect your soul to the engine and open the Soul Engine web interface.
-
-# 📖 Documentation
+# 📖 Soul Engine Documentation
 
 Full documentation for the Soul Engine API is located [here](https://docs.souls.chat)!
