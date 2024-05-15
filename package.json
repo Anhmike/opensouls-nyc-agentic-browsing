@@ -12,14 +12,14 @@
   "author": "",
   "license": "UNLICENSED",
   "devDependencies": {
-    "@types/bun": "^1.0.12",
+    "@types/bun": "^1.1.2",
     "@types/puppeteer": "^7.0.4",
     "@types/turndown": "^5.0.4",
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@opensouls/engine": "link:@opensouls/engine",
-    "@opensouls/soul": "link:@opensouls/soul",
+    "@opensouls/engine": "0.1.27-alpha.0",
+    "@opensouls/soul": "0.1.27-alpha.0",
     "dotenv": "^16.4.5",
     "puppeteer": "^22.8.1",
     "turndown": "^7.1.3"
