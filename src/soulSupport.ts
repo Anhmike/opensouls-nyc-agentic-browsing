@@ -7,13 +7,16 @@ export class SoulBrowser {
   loader?: WebLoader
 
   constructor() {
+    if (!process.env.SOUL_ENGINE_API_KEY || !process.env.SOUL_ENGINE_ORGANIZATION) {
+      throw new Error("Missing SOUL_ENGINE_API_KEY or SOUL_ENGINE_ORGANIZATION, check the readme on how to set these up.")
+    }
+
     this.soul = new Soul({
-      organization: "tobowers",
+      organization: process.env.SOUL_ENGINE_ORGANIZATION,
       blueprint: "readerman",
       soulId: "browser3",
-      local: true,
       debug: true,
-      token: process.env.SOUL_ENGINE_TOKEN,
+      token: process.env.SOUL_ENGINE_API_KEY,
     })
 
     this.soul.registerTool("visit", async ({ url }: { url: string}) => {
