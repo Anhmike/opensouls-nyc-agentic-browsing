@@ -11,7 +11,7 @@ export const skimContent = async (workingMemory: WorkingMemory, content: string,
   const answer = await robotEyes({
     query: indentNicely`
       Please answer the following: 
-      * What are the first things someone who loves learning would notice about the site?
+      * What are the first things someone who is a "design expert" would notice about the site?
       * What colors are used on the site?
       * Is there anything interesting about the layout or design?
       * Does the site appear professional?

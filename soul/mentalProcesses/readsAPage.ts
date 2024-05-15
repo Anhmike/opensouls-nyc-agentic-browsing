@@ -46,7 +46,7 @@ const readsAPage: MentalProcess = async ({ workingMemory }) => {
 
   const [withExclamation, stream] = await externalDialog(
     afterToolChoice,
-    `Exclaim something interesting about the page that ${workingMemory.soulName} finds super interesting.`,
+    `Exclaim a critique ${workingMemory.soulName} would comment on about the design or layout of the page.`,
     { stream: true, model: BIG_MODEL }
   )
   speak(stream)
