@@ -4,6 +4,7 @@ import externalDialog from "../cognitiveSteps/externalDialog.js";
 import { toolChooser } from "../cognitiveFunctions/toolChooser.js";
 import { BIG_MODEL } from "../lib/models.js";
 import { skimContent } from "../cognitiveFunctions/skimmer.js";
+import { BrowserReturn } from "../lib/toolUseReturnType.js";
 
 export enum BrowserResponses {
   visited = "visited",
@@ -16,7 +17,7 @@ const readsAPage: MentalProcess = async ({ workingMemory }) => {
   const { invocationCount } = useProcessManager()
   const siteToVisit = useSoulMemory("siteToVisit", "")
   const lastContent = useSoulMemory("lastContent", "")
-  const visit = useTool<{ url: string }, { screenshot: string, markdown: string}>("visit")
+  const visit = useTool<{ url: string }, BrowserReturn>("visit")
 
   if (invocationCount === 0) {
     log("dispatching visit", siteToVisit.current)

@@ -2,6 +2,7 @@ import { WorkingMemory, indentNicely, useActions, useSoulMemory, useTool } from 
 import decision from "../cognitiveSteps/decision.js";
 import { queryRobotEyes } from "./queryRobotEyes.js";
 import { skimContent } from "./skimmer.js";
+import { type BrowserReturn } from "../lib/toolUseReturnType.js";
 
 export enum ToolPossibilities {
   // visit = "visit",
@@ -18,8 +19,8 @@ export const toolChooser = async (workingMemory: WorkingMemory): Promise<Working
   const { log } = useActions()
   const lastContent = useSoulMemory("lastContent", "")
 
-  const scrollDown = useTool<void, { screenshot: string, markdown: string }>("scrollDown")
-  const scrollUp = useTool<void, { screenshot: string, markdown: string }>("scrollUp")
+  const scrollDown = useTool<void, BrowserReturn>("scrollDown")
+  const scrollUp = useTool<void, BrowserReturn>("scrollUp")
 
   const [withToolChoice, toolChoice] = await decision(
     workingMemory,
@@ -46,7 +47,7 @@ export const toolChooser = async (workingMemory: WorkingMemory): Promise<Working
     case ToolPossibilities.scrollDown:
       {
         log("scroll down")
-        const { markdown, screenshot } = await scrollDown()
+        const { markdown, screenshot, isAtBottom } = await scrollDown()
         lastContent.current = markdown
 
         const withSkim = await skimContent(
@@ -56,12 +57,16 @@ export const toolChooser = async (workingMemory: WorkingMemory): Promise<Working
           markdown,
           screenshot,
         )
+        if (isAtBottom) {
+          log("at bottom")
+          return withSkim
+        }
         return toolChooser(withSkim)
       }
     case ToolPossibilities.scrollUp:
       {
         log("scroll up")
-        const { markdown, screenshot } = await scrollUp()
+        const { markdown, screenshot, isAtTop } = await scrollUp()
         lastContent.current = markdown
 
         const withSkim = await skimContent(
@@ -71,6 +76,10 @@ export const toolChooser = async (workingMemory: WorkingMemory): Promise<Working
           markdown,
           screenshot,
         )
+        if (isAtTop) {
+          log("at top")
+          return withSkim
+        }
         return toolChooser(withSkim)
       }
     case ToolPossibilities.queryRobotEyes:

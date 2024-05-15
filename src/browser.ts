@@ -223,6 +223,18 @@ export class WebLoader {
     })
   }
 
+  async isAtBottom() {
+    return this.mustPage().evaluate(() => {
+      return window.innerHeight + window.scrollY >= document.body.offsetHeight;
+    })
+  }
+
+  async isAtTop() {
+    return this.mustPage().evaluate(() => {
+      return window.scrollY === 0;
+    })
+  }
+
   private mustPage() {
     if (!this.page) {
       throw new Error("No page loaded");
