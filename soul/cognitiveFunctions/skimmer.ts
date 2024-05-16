@@ -15,6 +15,9 @@ export const skimContent = async (workingMemory: WorkingMemory, content: string,
       * What colors are used on the site?
       * Is there anything interesting about the layout or design?
       * Does the site appear professional?
+      * Do *not* comment on what the site about, only the visual aspects, layout, etc. If you mention content, only do it as a helpful guide to finding text in the layout.
+      
+      Please respond with a detailed description of the site, use up to about 5 sentences.
     `,
     image
   })
