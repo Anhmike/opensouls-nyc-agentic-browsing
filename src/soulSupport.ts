@@ -16,7 +16,6 @@ export class SoulBrowser {
       blueprint: "readerman",
       soulId: "browser3",
       debug: true,
-      local: true,
       token: process.env.SOUL_ENGINE_API_KEY,
     })
 
@@ -58,7 +57,7 @@ export class SoulBrowser {
   }
 
   async start() {
-    this.loader = new WebLoader({ browser: await createBrowser() })
+    this.loader = new WebLoader({ browser: await createBrowser({ headless: false }) })
     await this.soul.connect()
   }
 
