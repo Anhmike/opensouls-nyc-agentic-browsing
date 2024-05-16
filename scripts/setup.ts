@@ -1,4 +1,3 @@
-#!/usr/bin/env npx tsx
 import { indentNicely } from "@opensouls/engine";
 import { $ } from "execa";
 import fs from "node:fs/promises";

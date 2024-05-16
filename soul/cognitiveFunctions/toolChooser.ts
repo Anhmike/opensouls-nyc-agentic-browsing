@@ -3,6 +3,8 @@ import decision from "../cognitiveSteps/decision.js";
 import { queryRobotEyes } from "./queryRobotEyes.js";
 import { skimContent } from "./skimmer.js";
 import { type BrowserReturn } from "../lib/toolUseReturnType.js";
+import externalDialog from "../cognitiveSteps/externalDialog.js";
+import { BIG_MODEL } from "../lib/models.js";
 
 export enum ToolPossibilities {
   // visit = "visit",
@@ -16,13 +18,14 @@ export enum ToolPossibilities {
 
 
 export const toolChooser = async (workingMemory: WorkingMemory): Promise<WorkingMemory> => {
-  const { log } = useActions()
+  const { log, speak } = useActions()
   const lastContent = useSoulMemory("lastContent", "")
+  const lastImage = useSoulMemory("lastImage", "")
 
   const scrollDown = useTool<void, BrowserReturn>("scrollDown")
   const scrollUp = useTool<void, BrowserReturn>("scrollUp")
 
-  const [withToolChoice, toolChoice] = await decision(
+  const [, toolChoice] = await decision(
     workingMemory,
     {
       description: indentNicely`
@@ -61,7 +64,15 @@ export const toolChooser = async (workingMemory: WorkingMemory): Promise<Working
           log("at bottom")
           return withSkim
         }
-        return toolChooser(withSkim)
+
+        const [withIntermediate, stream] = await externalDialog(
+          withSkim,
+          "Exclaim an intermediate critique about the site, but mention you're going to keep looking",
+          { model: BIG_MODEL, stream: true }
+        )
+        speak(stream)
+
+        return toolChooser(withIntermediate)
       }
     case ToolPossibilities.scrollUp:
       {
@@ -80,12 +91,20 @@ export const toolChooser = async (workingMemory: WorkingMemory): Promise<Working
           log("at top")
           return withSkim
         }
-        return toolChooser(withSkim)
+
+        const [withIntermediate, stream] = await externalDialog(
+          withSkim,
+          "Exclaim an intermediate critique about the site, but mention you're going to keep looking",
+          { model: BIG_MODEL, stream: true }
+        )
+        speak(stream)
+
+        return toolChooser(withIntermediate)
       }
     case ToolPossibilities.queryRobotEyes:
       {
         log("querying robot eyes")
-        const { query, answer } = await queryRobotEyes(workingMemory)
+        const { query, answer } = await queryRobotEyes(workingMemory, lastImage.current)
         log("Q:", query, "A:", answer)
         return toolChooser(workingMemory.withMonologue(indentNicely`
           ${workingMemory.soulName} asked Robot Eyes:
@@ -110,5 +129,4 @@ export const toolChooser = async (workingMemory: WorkingMemory): Promise<Working
       log("stopping reading")
       return workingMemory
   }
-
 }

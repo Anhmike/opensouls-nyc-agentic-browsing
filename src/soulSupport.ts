@@ -16,6 +16,7 @@ export class SoulBrowser {
       blueprint: "readerman",
       soulId: "browser3",
       debug: true,
+      local: true,
       token: process.env.SOUL_ENGINE_API_KEY,
     })
 
@@ -39,6 +40,7 @@ export class SoulBrowser {
   }
 
   private async toolUseReturn() {
+    console.log("toolUseReturn")
     const html = await this.mustLoader().captureVisibleHtmlTree()
     const markdown = htmlToMarkdown(html)
     const screenshot = await this.mustLoader().screenshot()
@@ -46,6 +48,7 @@ export class SoulBrowser {
       this.mustLoader().isAtTop(),
       this.mustLoader().isAtBottom(),
     ])
+    // console.log("returning", { markdown: markdown.length, screenshot: screenshot.length, isAtTop, isAtBottom })
     return {
       markdown,
       screenshot: `data:image/png;base64,${screenshot}`,

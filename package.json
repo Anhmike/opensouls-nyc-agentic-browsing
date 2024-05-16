@@ -6,16 +6,21 @@
   "description": "An AI Soul that wants to critique your design.",
   "main": "index.js",
   "scripts": {
-    "setup": "tsx scripts/setup.ts",
-    "start": "conc \"soul-engine dev\" \"tsx scripts/helper.ts\""
+    "setup": "node --loader=ts-node/esm scripts/setup.ts",
+    "start": "NODE_OPTIONS=\"--loader=ts-node/esm\" conc \"soul-engine dev\" \"node scripts/helper.ts\"",
+    "test": "mocha tests/*.spec.ts tests/**/*.spec.ts"
   },
   "keywords": [],
   "author": "",
   "license": "UNLICENSED",
   "devDependencies": {
+    "@types/chai": "^4.3.16",
+    "@types/mocha": "^10.0.6",
     "@types/turndown": "^5.0.4",
+    "chai": "^5.1.1",
     "execa": "^9.1.0",
-    "tsx": "^4.10.2",
+    "mocha": "^10.4.0",
+    "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   },
   "dependencies": {
@@ -23,7 +28,7 @@
     "@opensouls/soul": "0.1.29-alpha.0",
     "concurrently": "^8.2.2",
     "dotenv": "^16.4.5",
-    "puppeteer": "^22.8.1",
+    "puppeteer": "^22.8.2",
     "turndown": "^7.1.3"
   }
 }

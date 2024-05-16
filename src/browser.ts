@@ -42,7 +42,7 @@ async function extractVisibleHtmlTree(page: Page) {
   page.on('console', (msg: any) => {
     console.log(msg.text())
   });
-  
+
   return await page.evaluate(() => {
     const body = window.document.querySelector('body');
     if (!body) {
@@ -54,6 +54,8 @@ async function extractVisibleHtmlTree(page: Page) {
       children: [],
     }
 
+    console.log("about to define bluto")
+
     const isVisible = (el: Element) => {
       const rect = el.getBoundingClientRect();
       const style = window.getComputedStyle(el);
@@ -61,10 +63,10 @@ async function extractVisibleHtmlTree(page: Page) {
       const hasDimensions = rect.width > 0 || rect.height > 0;
       const displayVisible = style.display !== 'none';
       const visibilityVisible = style.visibility === 'visible';
-        
+
       const visible = displayVisible && visibilityVisible && hasDimensions && partiallyVisible;
       if (!visible) {
-        console.log(`Element hidden: ${el.tagName}, Display: ${style.display}, Visibility: ${style.visibility}, Rect: ${JSON.stringify(rect)}, Window Height: ${window.innerHeight}, Window Width: ${window.innerWidth}`);
+        // console.log(`Element hidden: ${el.tagName}, Display: ${style.display}, Visibility: ${style.visibility}, Rect: ${JSON.stringify(rect)}, Window Height: ${window.innerHeight}, Window Width: ${window.innerWidth}`);
       }
       return visible;
     }
@@ -74,7 +76,7 @@ async function extractVisibleHtmlTree(page: Page) {
     }
 
     const walkDom = (node: Node, parent: CleanElementStandin): CleanElementStandin => {
-      // console.log("walking", node.className, "with parent", parent.tagName, node.nodeName, node.nodeType, node.textContent?.trim())
+      // console.log("walking", "with parent", parent.tagName, node.nodeName, node.nodeType, node.textContent?.trim())
       if (node.nodeType === Node.TEXT_NODE) {
         if (!node.textContent?.trim()) {
           return parent
@@ -108,7 +110,7 @@ async function extractVisibleHtmlTree(page: Page) {
       }
 
       if (
-        node.nodeName === 'IMG' || 
+        node.nodeName === 'IMG' ||
         node.nodeName === 'A' ||
         (Array.from(node.childNodes).every((child) => child.nodeType === Node.TEXT_NODE))
       ) {
@@ -195,7 +197,9 @@ export class WebLoader {
   }
 
   async captureVisibleHtmlTree(): Promise<string> {
-    return htmlFromCleanElement(await extractVisibleHtmlTree(this.mustPage()))
+    const page = this.mustPage()
+    const extracted = await extractVisibleHtmlTree(page)
+    return htmlFromCleanElement(extracted)
   }
 
   close() {
@@ -206,7 +210,7 @@ export class WebLoader {
   }
 
   async screenshot(path?: string) {
-    const resp = await this.mustPage().screenshot({ path: path, encoding: path ? 'binary' : 'base64'});
+    const resp = await this.mustPage().screenshot({ path: path, encoding: path ? 'binary' : 'base64' });
     console.log(`Screenshot saved to ${path}`);
     return resp
   }

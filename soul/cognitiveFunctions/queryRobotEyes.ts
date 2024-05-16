@@ -2,9 +2,8 @@ import { WorkingMemory, indentNicely, useActions, useSoulMemory } from "@opensou
 import instruction from "../cognitiveSteps/instruction.js";
 import { robotEyes } from "./robotEyes.js";
 
-export const queryRobotEyes = async (workingMemory: WorkingMemory) => {
+export const queryRobotEyes = async (workingMemory: WorkingMemory, image: string) => {
   const { log } = useActions()
-  const lastImage = useSoulMemory("lastImage", "")
 
   const [,query] = await instruction(
     workingMemory,
@@ -16,7 +15,7 @@ export const queryRobotEyes = async (workingMemory: WorkingMemory) => {
   )
 
   log(`Querying robot eyes with: ${query}`)
-  const answer = await robotEyes({ query, image: lastImage.current })
+  const answer = await robotEyes({ query, image })
 
   return {
     query,

@@ -17,6 +17,7 @@ const readsAPage: MentalProcess = async ({ workingMemory }) => {
   const { invocationCount } = useProcessManager()
   const siteToVisit = useSoulMemory("siteToVisit", "")
   const lastContent = useSoulMemory("lastContent", "")
+  const lastImage = useSoulMemory("lastImage", "")
   const visit = useTool<{ url: string }, BrowserReturn>("visit")
 
   if (invocationCount === 0) {
@@ -34,8 +35,7 @@ const readsAPage: MentalProcess = async ({ workingMemory }) => {
     log("after visit", siteToVisit.current)
 
     lastContent.current = initialPage.markdown
-
-    log("skimming the content")
+    lastImage.current = initialPage.screenshot
     
     const withSkim = await skimContent(workingMemory, initialPage.markdown, initialPage.screenshot)
 
