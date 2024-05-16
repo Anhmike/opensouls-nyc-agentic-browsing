@@ -7,6 +7,8 @@ Readerman is *also* an example of agentic tool use (in this case a browser) from
 
 Readerman can agentically control a browser by visiting a url, scrolling up, or down, querying his robot eyes for visual information, or reading more deeply into an individual section.
 
+A video of him in action is here: https://twitter.com/tobowers/status/1791072992362889412
+
 ## ⚡ QuickStart
 
 1. `npm install`
