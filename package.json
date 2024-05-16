@@ -7,7 +7,7 @@
   "main": "index.js",
   "scripts": {
     "setup": "node --loader=ts-node/esm scripts/setup.ts",
-    "start": "NODE_OPTIONS=\"--loader=ts-node/esm\" conc \"soul-engine dev\" \"node scripts/helper.ts\"",
+    "start": "NODE_OPTIONS=\"--loader=ts-node/esm\" conc \"soul-engine dev --noopen\" \"node scripts/helper.ts\"",
     "test": "mocha tests/*.spec.ts tests/**/*.spec.ts"
   },
   "keywords": [],
@@ -24,8 +24,8 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@opensouls/engine": "0.1.29-alpha.0",
-    "@opensouls/soul": "0.1.29-alpha.0",
+    "@opensouls/engine": "^0.1.30",
+    "@opensouls/soul": "^0.1.30",
     "concurrently": "^8.2.2",
     "dotenv": "^16.4.5",
     "puppeteer": "^22.8.2",
